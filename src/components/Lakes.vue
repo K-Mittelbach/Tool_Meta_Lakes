@@ -11,14 +11,15 @@
               >
         <v-toolbar-title>
           <h2>LAKES</h2>
+         
           </v-toolbar-title>
-        
         <v-spacer>
         </v-spacer>
         <v-dialog
           v-model="dialog"
           max-width="500px"
         >
+       
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               color="primary"
@@ -27,10 +28,12 @@
               v-bind="attrs"
               v-on="on"
             >
+            
               Add Lake
             </v-btn>
           </template>
           <v-card>
+            
             <v-card-title>
               <span class="headline">{{ formTitle }}</span>
             </v-card-title>
@@ -144,9 +147,9 @@
         </v-dialog>
       </v-toolbar>
     </template>
-<template v-slot:item.reviewed="{ }" >
+<template v-slot:item.isReviewed="{ }" >
  <v-checkbox
-              v-model="ex4"
+              
               
               color="blue"
               value="red"
@@ -154,9 +157,9 @@
               hide-details
             ></v-checkbox>
 </template>
-<template v-slot:item.edited="{ }" >
+<template v-slot:item.isEdited="{ }" >
  <v-checkbox
-              v-model="ex4"
+             
               
               color="indigo"
               value="false"
@@ -193,55 +196,39 @@
 </template>
 
  <script>
- import gql from "graphql-tag";
-
-const GET_LAKES=gql`
-query getLakes{
-  Lakes{
-        Same,
-        Latitude,
-        Longitude,
-        MaxDepth,
-        SurfaceArea,
-        SurfaceLevel,
-        CatchmentArea,
-        Countries
-  }
-}
-`;
-
- const ADD_LAKE = gql`
-  mutation addLake(
-    $Name: String!
-    $Latitude: Numeric!
-    $Longitude: Numeric!
-    $MaxDepth: Numeric!
-    $SurfaceLevel: Numeric!
-    $SurfaceArea: Numeric!
-    $CatchmentArea: Numeric!
-    $Country: String!
+import gql from "graphql-tag";
+//ADD Lake mutation
+const post = gql`
+  mutation post(
+    $name: String!,
+    $latitude: Numeric,
+    $longitude: Numeric,
+    $maxDepth: Numeric,
+    $surfaceLevel: Numeric,
+    $surfaceArea: Numeric,
+    $catchmentArea: Numeric,
+    $countries: String,
+    $isReviewed: Boolean,
+    $isEdited: Boolean
   )  {
-    add_lakes(
-      objects:[
-        {
-          Name: $Name
-          Latitude: $Latitude
-          Longitude:  $Longitude
-          MaxDepth:  $MaxDepth
-          SurfaceLevel: $SurfaceLevel
-          SurfaceArea:  $SurfaceArea
-          CatchmentArea:  $CatchmentArea
-          Country: $Country
-        }
-      ]
-    )
-  }{
-    returning{
-      Id
-    }
+    post(objects:{
+          name: $name,
+          latitude: $latitude,
+          longitude:  $longitude,
+          maxDepth:  $maxDepth,
+          surfaceLevel: $surfaceLevel,
+          surfaceArea:  $surfaceArea,
+          catchmentArea:  $catchmentArea,
+          countries: $countries,
+          isEdited: $isEdited,
+          isReviewed: $isReviewed
+    })
+    {id}
+  
   }
- `;
+  `;
   export default {
+    
     data: () => ({
       dialog: false,
       dialogDelete: false,
@@ -259,9 +246,9 @@ query getLakes{
         { text: 'SurfaceLevel', value: 'surfaceLevel', class: "--text subtitle-1" },
         { text: 'SurfaceArea', value: 'surfaceArea' , class: "--text subtitle-1"},
         { text: 'CatchmentArea', value: 'catchmentArea' ,class: "--text subtitle-1"},
-        { text: 'Country', value: 'countries', sortable: false, class: "--text subtitle-1" },
-        { text: 'IsReviewed', value: 'reviewed', sortable: false, class: "--text subtitle-1" },
-        { text: 'IsEdited', value: 'edited', sortable: false, class: "--text subtitle-1" },
+        { text: 'Countries', value: 'countries', sortable: false, class: "--text subtitle-1" },
+        { text: 'IsReviewed', value: 'isReviewed', sortable: false, class: "--text subtitle-1" },
+        { text: 'IsEdited', value: 'isEdited', sortable: false, class: "--text subtitle-1" },
         { text: 'Edit', value: 'edit', sortable: false, class: "--text subtitle-1" },
         { text: 'Delete', value: 'delete', sortable: false, class: "--text subtitle-1" },
       ],
@@ -276,6 +263,8 @@ query getLakes{
         surfaceLevel: 0,
         catchmentArea: 0,
         countries: ' ',
+        isReviewed: false,
+        isEdited: false
       },
       defaultItem: {
         name: '',
@@ -286,6 +275,8 @@ query getLakes{
         surfaceLevel: 0,
         catchmentArea: 0,
         countries: ' ',
+        isEdited: false,
+        isReviewed: false
       },
     }),
 
@@ -293,6 +284,7 @@ query getLakes{
       formTitle () {
         return this.editedIndex === -1 ? 'Add Lake' : 'Edit Lake'
       },
+      
     },
 
     watch: {
@@ -303,98 +295,32 @@ query getLakes{
         val || this.closeDelete()
       },
     },
+    apollo:{
+      Lakes: gql`
+      query{
+        Lakes{
+          id,
+          name,
+          longitude,
+          latitude,
+          maxDepth,
+          surfaceLevel,
+          surfaceArea,
+          catchmentArea,
+          countries,
+          isEdited,
+          isReviewed,
+        }
+      }`
+    },
 
     created () {
       this.initialize()
     },
-    apollo:{
-      lakes:{
-        query: GET_LAKES 
-      }
-    },
+    
     methods: {
       initialize () {
-        this.lakes = [
-          {
-            name: 'A',
-            longitude: -75.424734,
-            latitude:  83.000368,
-            countries: "CA",
-          },
-          {
-            name: 'Ahvenainen',
-            longitude:28.125358,
-            latitude: 60.826345,
-            countries: "FI",
-          },
-          {
-            name: 'Albano',
-            longitude: 12.6695080233,
-            latitude: 41.7461118276999,
-            countries: "IT",
-          },
-          {
-            name: 'Alimmainen Savijärvi',
-            longitude: 24.4016080769999,
-            latitude: 61.7442196149999,
-            countries: "FI",
-          },
-          {
-            name: 'Big Round Lake',
-            longitude: -68.8548436608,
-            latitude: 69.8647630978999,
-            maxDepth: 36.3,
-            surfaceLevel: 180,
-            surfaceArea: 1300000,
-            countries: "CA",
-          },
-          {
-            name: 'Blue Lake',
-            longitude: -150.465176157999,
-            latitude: 68.0870134782,
-            maxDepth: 4,
-            surfaceLevel: 1275,
-            surfaceArea:  40000,
-            catchmentArea: 4100000,
-            countries: "US",
-          },
-          {
-            name: 'C2',
-            longitude: -77.985993,
-            latitude: 82.827593,
-            maxDepth: 84,
-            surfaceArea: 1800000,
-            catchmentArea: 21000000,
-            countries: "CA",
-          },
-          {
-            name: 'Donard',
-            longitude:-61.7874877005,
-            latitude: 66.6625264044999,
-            maxDepth: 22,
-            countries: "CA",
-          },
-          {
-            name: 'Gyltigesjön',
-            longitude: 13.175415,
-            latitude: 56.756687,
-            maxDepth: 20,
-            surfaceLevel: 66,
-            surfaceArea: 400000,
-            catchmentArea:182000000,
-            countries: "SE",
-          },
-          {
-            name: 'Steel Lake',
-            longitude: -94.6834010032,
-            latitude: 46.9729734973,
-            maxDepth: 21,
-            surfaceLevel:  415.4,
-            surfaceArea: 230000,
-            catchmentArea: 1080000,
-            countries: "US",
-          },
-        ]
+        this.lakes = this.Lakes
       },
 
       editItem (item) {
@@ -435,22 +361,26 @@ query getLakes{
           Object.assign(this.lakes[this.editedIndex], this.editedItem)
         } else {
           this.lakes.push(this.editedItem)
-          //ADDLAKE_GRAPHQL
-          const {name,latitude,longitude,maxDepth,surfaceArea,surfaceLevel,catchmentArea,countries} = this.editItem;
+         const {name,latitude,longitude,maxDepth,surfaceArea,surfaceLevel,catchmentArea,countries,isEdited,isReviewed} = this.lakes[this.lakes.length -1 ];
+        
+          //Mutation 
           this.$apollo.mutate({
-            mutation: ADD_LAKE,
+            mutation: post,
             variables:{
               name,
               latitude,
               longitude,
               maxDepth,
-              surfaceArea,
               surfaceLevel,
+              surfaceArea,
               catchmentArea,
-              countries
+              countries,
+              isEdited,
+              isReviewed
             },
-            refetchQueries: ["getLakes"]
           });
+          
+         
         }
         this.close()
       },
@@ -458,3 +388,62 @@ query getLakes{
   }
 </script>
 
+<!-- 
+
+//Mutation
+ADDLAKE_GRAPHQL
+          const {Name,Latitude,Longitude,MaxDepth,SurfaceArea,SurfaceLevel,CatchmentArea,Country} = this.lakes[this.lakes.length -1 ];
+          this.$apollo.mutate({
+            mutation: ADD_LAKE,
+            variables:{
+              Name,
+              Latitude,
+              Longitude,
+              MaxDepth,
+              SurfaceArea,
+              SurfaceLevel,
+              CatchmentArea,
+              Country
+            },
+            refetchQueries: ["getLakes"]
+          });
+
+
+//ADD Lake mutation
+const ADD_LAKE = gql`
+  mutation addLake(
+    $Name: String!
+    $Latitude: Numeric!
+    $Longitude: Numeric!
+    $MaxDepth: Numeric!
+    $SurfaceLevel: Numeric!
+    $SurfaceArea: Numeric!
+    $CatchmentArea: Numeric!
+    $Country: String!
+  )  {
+    add_lakes(
+      objects:[
+        {
+          Name: $Name
+          Latitude: $Latitude
+          Longitude:  $Longitude
+          MaxDepth:  $MaxDepth
+          SurfaceLevel: $SurfaceLevel
+          SurfaceArea:  $SurfaceArea
+          CatchmentArea:  $CatchmentArea
+          Country: $Country
+        }
+      ]
+    )
+  }{
+    returning{
+      Id
+    }
+  }
+  `;
+
+
+  
+}
+`;
+-->

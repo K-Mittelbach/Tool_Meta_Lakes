@@ -1,0 +1,31 @@
+type Query {
+    Lakes: [Lake!]
+  }
+
+  type Mutation {
+    post(name: String!, 
+        longitude: Float!
+        latitude: Float!
+        maxDepth: Float
+        surfaceLevel: Float
+        surfaceArea: Float
+        catchmentArea: Float
+        countries: String
+        isEdited: Boolean
+        isReviewed: Boolean): Lake!
+ 
+  }
+
+  type Lake{
+    id: ID!  
+    name: String!
+    latitude: Float!
+    longitude: Float!
+    maxDepth: Float
+    surfaceLevel: Float
+    surfaceArea: Float
+    catchmentArea: Float
+    countries: String
+    isEdited: Boolean!
+    isReviewed: Boolean
+  }
