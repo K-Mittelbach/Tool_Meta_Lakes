@@ -6,10 +6,25 @@ import { HttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import VueApollo from 'vue-apollo';
 
+import { onError } from 'apollo-link-error';
+import { ApolloLink } from 'apollo-link';
+
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    console.log('graphQLErrors', graphQLErrors);
+  }
+  if (networkError) {
+    console.log('networkError', networkError);
+  }
+});
+
+
 Vue.config.productionTip = false
 
  // Create an http link:
- const link = new HttpLink({uri: 'http://localhost:4000/'});
+ const httpLink = new HttpLink({uri: 'http://localhost:4000/'});
+
+ const link = ApolloLink.from([errorLink, httpLink]);
  
  const client = new ApolloClient({
    link: link,
@@ -32,6 +47,6 @@ const apolloProvider = new VueApollo({
 
 new Vue({
   vuetify,
-  provide:apolloProvider.provide(),
+  apolloProvider,
   render: h => h(App)
 }).$mount('#app')

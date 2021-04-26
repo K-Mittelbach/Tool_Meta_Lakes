@@ -3,34 +3,17 @@ const fs = require('fs');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
-const resolvers = {
-  Query: {
-    Lakes: async(parent,args,context) => {
-      return context.prisma.lake.findMany()
-    },
-  },
-  Mutation: {
-    post: (parent, args, context) => {
-       const addNewLake = context.prisma.lake.create({
-         data:{
-          name: args.name,
-          longitude: args.longitude,
-          latitude: args.latitude,
-          maxDepth: args.maxDepth,
-          surfaceLevel: args.surfaceLevel,
-          surfaceArea: args.surfaceArea,
-          catchmentArea: args.catchmentArea,
-          countries: args.countries,
-          isEdited: args.isEdited,
-          isReviewed: args.isReviewed
-         },
-      })
-      return addNewLake
-    },
-  },
-}
-
 const prisma = new PrismaClient()
+
+const Query = require('./resolvers/Query')
+const Mutation = require('./resolvers/Mutation')
+
+
+
+const resolvers = {
+  Query,
+  Mutation,
+}
 
 const server = new ApolloServer({
   typeDefs: fs.readFileSync(
@@ -38,10 +21,13 @@ const server = new ApolloServer({
       'utf-8'
   ),
   resolvers,
-  context:{
-    prisma,
+  context:({ req }) => {
+    return {
+      ...req,
+      prisma
+    };
   }
-})
+});
 
 server
   .listen()

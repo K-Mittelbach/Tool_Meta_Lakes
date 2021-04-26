@@ -1,31 +1,46 @@
 type Query {
     Lakes: [Lake!]
+ 
   }
 
   type Mutation {
-    post(name: String!, 
-        longitude: Float!
-        latitude: Float!
-        maxDepth: Float
-        surfaceLevel: Float
-        surfaceArea: Float
-        catchmentArea: Float
+    post(
+        name: String!
+        longitude: String
+        latitude: String
+        maxDepth: String
+        surfaceLevel: String
+        surfaceArea: String
+        catchmentArea: String
         countries: String
         isEdited: Boolean
         isReviewed: Boolean): Lake!
- 
+    updateLake(
+        id: ID!,
+        name: String!, 
+        longitude: String
+        latitude: String
+        maxDepth: String
+        surfaceLevel: String
+        surfaceArea: String
+        catchmentArea: String
+        countries: String
+        isEdited: Boolean
+        isReviewed: Boolean): Lake!
+        deleteLake(id: ID!): Lake!
   }
 
   type Lake{
     id: ID!  
     name: String!
-    latitude: Float!
-    longitude: Float!
-    maxDepth: Float
-    surfaceLevel: Float
-    surfaceArea: Float
-    catchmentArea: Float
+    latitude: String
+    longitude: String
+    maxDepth: String
+    surfaceLevel: String
+    surfaceArea: String
+    catchmentArea: String
     countries: String
     isEdited: Boolean!
     isReviewed: Boolean
   }
+

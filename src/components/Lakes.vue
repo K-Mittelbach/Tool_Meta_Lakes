@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="lakes"
+    :items="Lakes"
     sort-by="name"
     class="--text display-2 "
   >
@@ -27,6 +27,7 @@
               class="mb-2"
               v-bind="attrs"
               v-on="on"
+             
             >
             
               Add Lake
@@ -89,6 +90,16 @@
                     <v-text-field
                       v-model="editedItem.surfaceLevel"
                       label="SurfaceLevel"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    sm="6"
+                    md="4"
+                  >
+                  <v-text-field
+                      v-model="editedItem.surfaceArea"
+                      label="SurfaceArea"
                     ></v-text-field>
                   </v-col>
                   <v-col
@@ -197,36 +208,9 @@
 
  <script>
 import gql from "graphql-tag";
-//ADD Lake mutation
-const post = gql`
-  mutation post(
-    $name: String!,
-    $latitude: Numeric,
-    $longitude: Numeric,
-    $maxDepth: Numeric,
-    $surfaceLevel: Numeric,
-    $surfaceArea: Numeric,
-    $catchmentArea: Numeric,
-    $countries: String,
-    $isReviewed: Boolean,
-    $isEdited: Boolean
-  )  {
-    post(objects:{
-          name: $name,
-          latitude: $latitude,
-          longitude:  $longitude,
-          maxDepth:  $maxDepth,
-          surfaceLevel: $surfaceLevel,
-          surfaceArea:  $surfaceArea,
-          catchmentArea:  $catchmentArea,
-          countries: $countries,
-          isEdited: $isEdited,
-          isReviewed: $isReviewed
-    })
-    {id}
-  
-  }
-  `;
+
+
+
   export default {
     
     data: () => ({
@@ -256,24 +240,24 @@ const post = gql`
       editedIndex: -1,
       editedItem: {
         name: '',
-        latitude: 0,
-        longitude: 0,
-        maxDepth: 0,
-        surfaceArea: 0,
-        surfaceLevel: 0,
-        catchmentArea: 0,
+        latitude: '',
+        longitude: '',
+        maxDepth: '',
+        surfaceArea: '',
+        surfaceLevel: '',
+        catchmentArea: '',
         countries: ' ',
         isReviewed: false,
         isEdited: false
       },
       defaultItem: {
         name: '',
-        latitude: 0,
-        longitude: 0,
-        maxDepth: 0,
-        surfaceArea: 0,
-        surfaceLevel: 0,
-        catchmentArea: 0,
+        latitude: '',
+        longitude: '',
+        maxDepth: '',
+        surfaceArea: '',
+        surfaceLevel: '',
+        catchmentArea: '',
         countries: ' ',
         isEdited: false,
         isReviewed: false
@@ -311,7 +295,7 @@ const post = gql`
           isEdited,
           isReviewed,
         }
-      }`
+      }`,
     },
 
     created () {
@@ -324,20 +308,23 @@ const post = gql`
       },
 
       editItem (item) {
-        this.editedIndex = this.lakes.indexOf(item)
+        this.editedIndex = this.Lakes.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
 
       deleteItem (item) {
-        this.editedIndex = this.lakes.indexOf(item)
+        this.editedIndex = this.Lakes.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialogDelete = true
+        
+   
       },
 
       deleteItemConfirm () {
-        this.lakes.splice(this.editedIndex, 1)
+        this.Lakes.splice(this.editedIndex, 1)
         this.closeDelete()
+        
       },
 
       close () {
@@ -354,18 +341,110 @@ const post = gql`
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
+        console.log("closeDelete")
+        var LakeID = this.editedItem.id;
+
+        this.$apollo.mutate({
+          mutation: gql`
+          mutation($id: ID!)
+          {
+            deleteLake(
+              id: $id
+            )
+            {
+              name
+            }
+          }`,
+          variables:{
+           id: LakeID,
+          }
+        })
+
       },
 
       save () {
         if (this.editedIndex > -1) {
-          Object.assign(this.lakes[this.editedIndex], this.editedItem)
+          Object.assign(this.Lakes[this.editedIndex], this.editedItem)
+          //Update Mutation this.editedItem
+           let {id,name,latitude,longitude,maxDepth,surfaceArea,surfaceLevel,catchmentArea,countries,isEdited,isReviewed} = this.Lakes[this.editedIndex];
+            this.$apollo.mutate({
+            mutation: gql`
+            mutation($id: ID!
+                      $name: String!,
+                      $latitude: String,
+                      $longitude: String,
+                      $maxDepth: String,
+                      $surfaceLevel: String,
+                      $surfaceArea: String,
+                      $catchmentArea: String,
+                      $countries: String,
+                      $isReviewed: Boolean,
+                      $isEdited: Boolean)
+            {
+            updateLake(
+                id: $id,
+                name: $name,
+                latitude: $latitude,
+                longitude:  $longitude,
+                maxDepth:  $maxDepth,
+                surfaceLevel: $surfaceLevel,
+                surfaceArea:  $surfaceArea,
+                catchmentArea:  $catchmentArea,
+                countries: $countries,
+                isEdited: $isEdited,
+                isReviewed: $isReviewed
+                ) 
+                {
+              id
+            }
+           }`,
+            variables:{
+              id,
+              name,
+              latitude,
+              longitude,
+              maxDepth,
+              surfaceLevel,
+              surfaceArea,
+              catchmentArea,
+              countries,
+              isEdited,
+              isReviewed
+            },
+          });
         } else {
-          this.lakes.push(this.editedItem)
-         const {name,latitude,longitude,maxDepth,surfaceArea,surfaceLevel,catchmentArea,countries,isEdited,isReviewed} = this.lakes[this.lakes.length -1 ];
-        
+          this.Lakes.push(this.editedItem)
+          var {name,latitude,longitude,maxDepth,surfaceArea,surfaceLevel,catchmentArea,countries,isEdited,isReviewed} = this.Lakes[this.Lakes.length -1 ];
           //Mutation 
-          this.$apollo.mutate({
-            mutation: post,
+           this.$apollo.mutate({
+            mutation: gql`
+            mutation( $name: String!,
+                      $latitude: String,
+                      $longitude: String,
+                      $maxDepth: String,
+                      $surfaceLevel: String,
+                      $surfaceArea: String,
+                      $catchmentArea: String,
+                      $countries: String,
+                      $isReviewed: Boolean,
+                      $isEdited: Boolean)
+            {
+            post(
+                name: $name,
+                latitude: $latitude,
+                longitude:  $longitude,
+                maxDepth:  $maxDepth,
+                surfaceLevel: $surfaceLevel,
+                surfaceArea:  $surfaceArea,
+                catchmentArea:  $catchmentArea,
+                countries: $countries,
+                isEdited: $isEdited,
+                isReviewed: $isReviewed
+                ) 
+                {
+              id
+            }
+           }`,
             variables:{
               name,
               latitude,
@@ -388,62 +467,3 @@ const post = gql`
   }
 </script>
 
-<!-- 
-
-//Mutation
-ADDLAKE_GRAPHQL
-          const {Name,Latitude,Longitude,MaxDepth,SurfaceArea,SurfaceLevel,CatchmentArea,Country} = this.lakes[this.lakes.length -1 ];
-          this.$apollo.mutate({
-            mutation: ADD_LAKE,
-            variables:{
-              Name,
-              Latitude,
-              Longitude,
-              MaxDepth,
-              SurfaceArea,
-              SurfaceLevel,
-              CatchmentArea,
-              Country
-            },
-            refetchQueries: ["getLakes"]
-          });
-
-
-//ADD Lake mutation
-const ADD_LAKE = gql`
-  mutation addLake(
-    $Name: String!
-    $Latitude: Numeric!
-    $Longitude: Numeric!
-    $MaxDepth: Numeric!
-    $SurfaceLevel: Numeric!
-    $SurfaceArea: Numeric!
-    $CatchmentArea: Numeric!
-    $Country: String!
-  )  {
-    add_lakes(
-      objects:[
-        {
-          Name: $Name
-          Latitude: $Latitude
-          Longitude:  $Longitude
-          MaxDepth:  $MaxDepth
-          SurfaceLevel: $SurfaceLevel
-          SurfaceArea:  $SurfaceArea
-          CatchmentArea:  $CatchmentArea
-          Country: $Country
-        }
-      ]
-    )
-  }{
-    returning{
-      Id
-    }
-  }
-  `;
-
-
-  
-}
-`;
--->
